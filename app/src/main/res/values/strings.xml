@@ -1,0 +1,39 @@
+<resources>
+    <string name="app_name">AppPatitas2QBO</string>
+    <string name="vallistmascota">Mascotas Perdidas</string>
+    <string name="valvoluntario">Voluntario</string>
+    <string name="valetusuario">Ingrese su usuario</string>
+    <string name="valetpassword">Ingrese su password</string>
+    <string name="valbtnlogin">INICIAR SESIÓN</string>
+    <string name="valbtnregistrar">REGISTRARME</string>
+    <string name="valchkguardardatos">Recordar</string>
+    <string name="msguspassword">Ingrese usuario y password</string>
+    <string name="action_cerrar">Cerrar sesión</string>
+    <string name="tvtituloregistro">REGISTRARME</string>
+    <string name="valetnomusuario">Ingrese su nombre</string>
+    <string name="valetapeusuario">Ingrese su apellido</string>
+    <string name="valetemailusuario">Ingrese su email</string>
+    <string name="valetcelusuario">Ingrese su celular</string>
+    <string name="valetusureg">Ingrese su usuario</string>
+    <string name="valetpassreg">Ingrese su password</string>
+    <string name="valetrepassreg">Vuelva a ingresar su password</string>
+    <string name="valbtnregistrarme">Si aún no tienes cuenta, registrate aquí.</string>
+    <string name="valbtnirlogin">VOLVER A LOGIN</string>
+    <string name="valtvtextovoluntario">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</string>
+    <string name="valchkaceptocondiciones">ACEPTO LAS CONDICIONES DE SER VOLUNTARIO</string>
+    <string name="valbtnregvoluntario">REGISTRAR</string>
+    <string name="valtvtituvoluntario">¿Quieres ser voluntario?</string>
+    <string name="valtvesuvoluntario">"GRACIAS YA ERES PARTE DE NUESTRA RED DE VOLUNTARIOS "</string>
+    <string name="valbtnregistro">REGISTRAR USUARIO</string>
+    <string name="title_activity_home">HomeActivity</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+</resources>
