@@ -27,17 +27,17 @@ import retrofit2.Response
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding : ActivityLoginBinding
-    //Definimos el viewmodel
+    //3.1 Definimos el viewmodel
     private lateinit var personaViewModel: PersonaViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        //Realizamos la instancia de ViewModelProvider
+        //3.2 Realizamos la instancia de ViewModelProvider
         personaViewModel = ViewModelProvider(this)
             .get(PersonaViewModel::class.java)
-        //Validamos que exista la preferencia recordardatos
+        //4.1 Validamos que exista la preferencia recordardatos
         if(verificarValorSharedPreferences()){
             //activar checkbox recordar
             binding.chkrecordar.isChecked = true
@@ -57,7 +57,7 @@ class LoginActivity : AppCompatActivity() {
         }else{
             personaViewModel.eliminartodo()
         }
-
+        //5.1 Crear el evento click Check
         binding.chkrecordar.setOnClickListener {
             setearValoresDeRecordar(it)
         }
@@ -77,7 +77,7 @@ class LoginActivity : AppCompatActivity() {
                 RegistroActivity::class.java))
         }
     }
-
+    //5.2. Seateamos los valores cuando quitamos el check de recordar datos
     fun setearValoresDeRecordar(view: View) {
         if (view is CheckBox) {
             val checked: Boolean = view.isChecked
@@ -97,7 +97,7 @@ class LoginActivity : AppCompatActivity() {
             }
         }
     }
-
+    //3.3 Crear método para validar los valores de SharedPreferences.
     fun verificarValorSharedPreferences(): Boolean{
         return SharedPreferencesManager().getSomeBooleanValue(Constantes().PREF_RECORDAR)
     }
@@ -111,6 +111,7 @@ class LoginActivity : AppCompatActivity() {
                 binding.btnlogin.isEnabled = true
                 val respuesta = response.body()!!
                 if(respuesta.rpta){
+                    //6.1 Guardar Información en SQLite
                     val personaEntity = PersonaEntity(
                         respuesta.idpersona.toInt(),
                         respuesta.nombres,
