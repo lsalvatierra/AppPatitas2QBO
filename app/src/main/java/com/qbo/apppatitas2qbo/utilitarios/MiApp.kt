@@ -4,19 +4,12 @@ import android.app.Application
 import android.content.Context
 
 class MiApp : Application() {
+    init { INSTANCE = this }
 
-    private lateinit var instancia: MiApp
+    companion object {
+        lateinit var INSTANCE: MiApp
+            private set
 
-    fun getInstance(): MiApp? {
-        return instancia
-    }
-
-    fun getContext(): Context {
-        return instancia
-    }
-
-    override fun onCreate() {
-        instancia = this
-        super.onCreate()
+        val applicationContext: Context get() { return INSTANCE.applicationContext }
     }
 }
