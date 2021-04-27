@@ -26,4 +26,13 @@ class SharedPreferencesManager() {
         return getSharedPreferences().getBoolean(dataLabel, false)
     }
 
+    fun setSomeStringValue(dataLabel: String, dataValue: String) {
+        val editor = getSharedPreferences().edit()
+        editor.putString(dataLabel, dataValue)
+        editor.commit()
+    }
+
+    fun getSomeStringValue(dataLabel: String): String {
+        return getSharedPreferences().getString(dataLabel, "").toString()
+    }
 }
