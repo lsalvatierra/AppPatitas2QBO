@@ -2,22 +2,18 @@ package com.qbo.apppatitas2qbo.view
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.CheckBox
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.material.snackbar.Snackbar
 import com.qbo.apppatitas2qbo.R
 import com.qbo.apppatitas2qbo.databinding.ActivityLoginBinding
 import com.qbo.apppatitas2qbo.retrofit.PatitasCliente
 import com.qbo.apppatitas2qbo.retrofit.request.RequestLogin
 import com.qbo.apppatitas2qbo.retrofit.response.ResponseLogin
-import com.qbo.apppatitas2qbo.utilitarios.Constantes
 import com.qbo.apppatitas2qbo.db.entity.PersonaEntity
-import com.qbo.apppatitas2qbo.utilitarios.MiApp
-import com.qbo.apppatitas2qbo.utilitarios.SharedPreferencesManager
+import com.qbo.apppatitas2qbo.utilitarios.*
 import com.qbo.apppatitas2qbo.viewmodel.PersonaViewModel
 import retrofit2.Call
 import retrofit2.Callback
@@ -29,6 +25,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var binding : ActivityLoginBinding
     //3.1 Definimos el viewmodel
     private lateinit var personaViewModel: PersonaViewModel
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,16 +63,20 @@ class LoginActivity : AppCompatActivity() {
             binding.btnlogin.isEnabled = false
             if(validarUsuarioPassword()){
                 autenticarUsuario(it, binding.etusuario.text.toString(),
-                binding.etpassword.text.toString())
+                    binding.etpassword.text.toString())
+
             }else{
                 binding.btnlogin.isEnabled = true
-                mostrarMensaje(it, getString(R.string.msguspassword))
+                AppMensaje.enviarMensaje(binding.root,
+                    getString(R.string.msguspassword),
+                    TipoMensaje.ERROR)
             }
         }
-        binding.tvregistrarme.setOnClickListener {
+        binding.btnregistrar.setOnClickListener {
             startActivity(Intent(applicationContext,
                 RegistroActivity::class.java))
         }
+
     }
     //5.2. Seateamos los valores cuando quitamos el check de recordar datos
     fun setearValoresDeRecordar(view: View) {
@@ -101,6 +102,7 @@ class LoginActivity : AppCompatActivity() {
     fun verificarValorSharedPreferences(): Boolean{
         return SharedPreferencesManager().getSomeBooleanValue(Constantes().PREF_RECORDAR)
     }
+
 
 
     fun autenticarUsuario(vista: View, usuario: String, password: String){
@@ -134,14 +136,16 @@ class LoginActivity : AppCompatActivity() {
                         HomeActivity::class.java))
                     finish()
                 }else{
-                    mostrarMensaje(vista, response.body()!!.mensaje)
-
+                    AppMensaje.enviarMensaje(binding.root,
+                        response.body()!!.mensaje,
+                        TipoMensaje.ERROR)
                 }
             }
             override fun onFailure(call: Call<ResponseLogin>, t: Throwable) {
                 binding.btnlogin.isEnabled = true
-                Log.e("ErroWS", t.message)
-                mostrarMensaje(vista, "Login failed!")
+                AppMensaje.enviarMensaje(binding.root,
+                    "Login failed!",
+                    TipoMensaje.ERROR)
             }
         })
     }
@@ -163,8 +167,5 @@ class LoginActivity : AppCompatActivity() {
         return respuesta
     }
 
-    //1. Creamos método para enviar nuestros mensajes
-    fun mostrarMensaje(vista: View, mensaje: String){
-        Snackbar.make(vista, mensaje, Snackbar.LENGTH_LONG).show()
-    }
+
 }

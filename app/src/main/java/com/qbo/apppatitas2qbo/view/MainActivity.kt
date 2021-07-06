@@ -21,6 +21,6 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this,LoginActivity::class.java))
             // close this activity
             finish()
-        }, 3000)
+        }, 6000)
     }
 }
