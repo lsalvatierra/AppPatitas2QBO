@@ -5,12 +5,17 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Patterns
 import android.view.View
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.snackbar.Snackbar
 import com.qbo.apppatitas2qbo.R
 import com.qbo.apppatitas2qbo.databinding.ActivityRegistroBinding
 import com.qbo.apppatitas2qbo.retrofit.PatitasCliente
 import com.qbo.apppatitas2qbo.retrofit.request.RequestRegistro
 import com.qbo.apppatitas2qbo.retrofit.response.ResponseRegistro
+import com.qbo.apppatitas2qbo.utilitarios.AppMensaje
+import com.qbo.apppatitas2qbo.utilitarios.TipoMensaje
+import com.qbo.apppatitas2qbo.viewmodel.AuthViewModel
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -19,15 +24,23 @@ import java.util.regex.Pattern
 class RegistroActivity : AppCompatActivity() {
 
     private lateinit var binding : ActivityRegistroBinding
+    private lateinit var authViewModel: AuthViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegistroBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        authViewModel = ViewModelProvider(this)
+            .get(AuthViewModel::class.java)
         binding.btnregistrarme.setOnClickListener {
             binding.btnregistrarme.isEnabled = false
             if(validarFormulario(it)){
-                registrarUsuario(it)
+                authViewModel.registrarUsuario(binding.etnomusuario.text.toString(),
+                    binding.etapeusuario.text.toString(),
+                    binding.etemailusuario.text.toString(),
+                    binding.etcelusuario.text.toString(),
+                    binding.etusureg.text.toString(),
+                    binding.etpassreg.text.toString())
             }else{
                 binding.btnregistrarme.isEnabled = true
             }
@@ -36,36 +49,18 @@ class RegistroActivity : AppCompatActivity() {
             startActivity(Intent(applicationContext,
                 LoginActivity::class.java))
         }
+        authViewModel.responseRegistro.observe(this, Observer {
+            obtenerResultadoRegistro(it)
+        })
     }
 
-    private fun registrarUsuario(vista: View) {
-        val requestRegistro = RequestRegistro(
-            binding.etnomusuario.text.toString(),
-            binding.etapeusuario.text.toString(),
-            binding.etemailusuario.text.toString(),
-            binding.etcelusuario.text.toString(),
-            binding.etusureg.text.toString(),
-            binding.etpassreg.text.toString()
-        )
-        val call: Call<ResponseRegistro> = PatitasCliente
-            .retrofitService.registro(requestRegistro)
-        call.enqueue(object : Callback<ResponseRegistro>{
-            override fun onResponse(
-                call: Call<ResponseRegistro>,
-                response: Response<ResponseRegistro>
-            ) {
-                if (response.body()!!.rpta) {
-                    setearControles()
-                }
-                mostrarMensaje(vista, response.body()!!.mensaje)
-                binding.btnregistrarme.isEnabled = true
-            }
-
-            override fun onFailure(call: Call<ResponseRegistro>, t: Throwable) {
-                TODO("Not yet implemented")
-            }
-
-        })
+    private fun obtenerResultadoRegistro(responseRegistro: ResponseRegistro) {
+        if (responseRegistro.rpta) {
+            setearControles()
+        }
+        AppMensaje.enviarMensaje(binding.root,
+            responseRegistro.mensaje, TipoMensaje.ERROR)
+        binding.btnregistrarme.isEnabled = true
     }
 
     //3. Método que setea los controles del formulario
@@ -86,62 +81,63 @@ class RegistroActivity : AppCompatActivity() {
             binding.etnomusuario.text.toString().trim().isEmpty() -> {
                 binding.etnomusuario.isFocusableInTouchMode = true
                 binding.etnomusuario.requestFocus()
-                mostrarMensaje(vista, getString(R.string.action_cerrar))
+                AppMensaje.enviarMensaje(binding.root,
+                    "Ingrese su nombre", TipoMensaje.ERROR)
                 respuesta = false
             }
             binding.etapeusuario.text.toString().trim().isEmpty() -> {
-                binding.etapeusuario.isFocusable = true
                 binding.etapeusuario.isFocusableInTouchMode = true
                 binding.etapeusuario.requestFocus()
-                mostrarMensaje(vista, "Ingrese su apellido")
+                AppMensaje.enviarMensaje(binding.root,
+                    "Ingrese su apellido", TipoMensaje.ERROR)
                 respuesta = false
             }
             binding.etemailusuario.text.toString().trim().isEmpty() -> {
-                binding.etemailusuario.isFocusable = true
                 binding.etemailusuario.isFocusableInTouchMode = true
                 binding.etemailusuario.requestFocus()
-                mostrarMensaje(vista, "Ingrese su email")
+                AppMensaje.enviarMensaje(binding.root,
+                    "Ingrese su email", TipoMensaje.ERROR)
                 respuesta = false
             }
-            binding.etemailusuario.text.toString().trim().isNotEmpty() -> {
+            /*binding.etemailusuario.text.toString().trim().isNotEmpty() -> {
                 val pattern: Pattern = Patterns.EMAIL_ADDRESS
                 if(!pattern.matcher(binding.etemailusuario.text.toString().trim()).matches())
                 {
-                    binding.etemailusuario.isFocusable = true
                     binding.etemailusuario.isFocusableInTouchMode = true
                     binding.etemailusuario.requestFocus()
-                    mostrarMensaje(vista, "Ingrese un email válido")
+                    AppMensaje.enviarMensaje(binding.root,
+                        "Ingrese su email correctamente", TipoMensaje.ERROR)
                     respuesta = false
                 }
-            }
+            }*/
             binding.etcelusuario.text.toString().trim().isEmpty() -> {
-                binding.etcelusuario.isFocusable = true
                 binding.etcelusuario.isFocusableInTouchMode = true
                 binding.etcelusuario.requestFocus()
-                mostrarMensaje(vista, "Ingrese su celular")
+                AppMensaje.enviarMensaje(binding.root,
+                    "Ingrese su celular", TipoMensaje.ERROR)
                 respuesta = false
             }
 
             binding.etusureg.text.toString().trim().isEmpty() -> {
-                binding.etusureg.isFocusable = true
                 binding.etusureg.isFocusableInTouchMode = true
                 binding.etusureg.requestFocus()
-                mostrarMensaje(vista, "Ingrese su usuario")
+                AppMensaje.enviarMensaje(binding.root,
+                    "Ingrese su usuario", TipoMensaje.ERROR)
                 respuesta = false
             }
             binding.etpassreg.text.toString().trim().isEmpty() -> {
-                binding.etpassreg.isFocusable = true
                 binding.etpassreg.isFocusableInTouchMode = true
                 binding.etpassreg.requestFocus()
-                mostrarMensaje(vista, "Ingrese su password")
+                AppMensaje.enviarMensaje(binding.root,
+                    "Ingrese su password", TipoMensaje.ERROR)
                 respuesta = false
             }
             binding.etpassreg.text.toString().trim().isNotEmpty() -> {
                 if(binding.etpassreg.text.toString() != binding.etrepassreg.text.toString()){
-                    binding.etrepassreg.isFocusable = true
                     binding.etrepassreg.isFocusableInTouchMode = true
                     binding.etrepassreg.requestFocus()
-                    mostrarMensaje(vista, "Su password no coincide")
+                    AppMensaje.enviarMensaje(binding.root,
+                        "Su password no coincide", TipoMensaje.ERROR)
                     respuesta = false
                 }
             }
@@ -150,8 +146,4 @@ class RegistroActivity : AppCompatActivity() {
     }
 
 
-    //1. Creamos método para enviar nuestros mensajes
-    fun mostrarMensaje(vista: View, mensaje: String){
-        Snackbar.make(vista, mensaje, Snackbar.LENGTH_LONG).show()
-    }
 }

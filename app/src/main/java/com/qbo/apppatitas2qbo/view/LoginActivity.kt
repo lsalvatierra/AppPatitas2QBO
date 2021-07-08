@@ -14,6 +14,7 @@ import com.qbo.apppatitas2qbo.retrofit.request.RequestLogin
 import com.qbo.apppatitas2qbo.retrofit.response.ResponseLogin
 import com.qbo.apppatitas2qbo.db.entity.PersonaEntity
 import com.qbo.apppatitas2qbo.utilitarios.*
+import com.qbo.apppatitas2qbo.viewmodel.AuthViewModel
 import com.qbo.apppatitas2qbo.viewmodel.PersonaViewModel
 import retrofit2.Call
 import retrofit2.Callback
@@ -21,12 +22,10 @@ import retrofit2.Response
 
 
 class LoginActivity : AppCompatActivity() {
-
     private lateinit var binding : ActivityLoginBinding
     //3.1 Definimos el viewmodel
     private lateinit var personaViewModel: PersonaViewModel
-
-
+    private lateinit var authViewModel: AuthViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
@@ -34,6 +33,8 @@ class LoginActivity : AppCompatActivity() {
         //3.2 Realizamos la instancia de ViewModelProvider
         personaViewModel = ViewModelProvider(this)
             .get(PersonaViewModel::class.java)
+        authViewModel = ViewModelProvider(this)
+            .get(AuthViewModel::class.java)
         //4.1 Validamos que exista la preferencia recordardatos
         if(verificarValorSharedPreferences()){
             //activar checkbox recordar
@@ -58,25 +59,16 @@ class LoginActivity : AppCompatActivity() {
         binding.chkrecordar.setOnClickListener {
             setearValoresDeRecordar(it)
         }
-
         binding.btnlogin.setOnClickListener {
-            binding.btnlogin.isEnabled = false
-            if(validarUsuarioPassword()){
-                autenticarUsuario(it, binding.etusuario.text.toString(),
-                    binding.etpassword.text.toString())
-
-            }else{
-                binding.btnlogin.isEnabled = true
-                AppMensaje.enviarMensaje(binding.root,
-                    getString(R.string.msguspassword),
-                    TipoMensaje.ERROR)
-            }
+            validarUsuarioPassword()
         }
         binding.btnregistrar.setOnClickListener {
             startActivity(Intent(applicationContext,
                 RegistroActivity::class.java))
         }
-
+        authViewModel.responseLogin.observe(this, Observer {
+            obtenerDatosLogin(it)
+        })
     }
     //5.2. Seateamos los valores cuando quitamos el check de recordar datos
     fun setearValoresDeRecordar(view: View) {
@@ -103,69 +95,54 @@ class LoginActivity : AppCompatActivity() {
         return SharedPreferencesManager().getSomeBooleanValue(Constantes().PREF_RECORDAR)
     }
 
-
-
-    fun autenticarUsuario(vista: View, usuario: String, password: String){
-        val requestLogin = RequestLogin(usuario, password)
-        val call: Call<ResponseLogin> = PatitasCliente.retrofitService.login(requestLogin)
-        call.enqueue(object :Callback<ResponseLogin>{
-            override fun onResponse(call: Call<ResponseLogin>, response: Response<ResponseLogin>) {
-                binding.btnlogin.isEnabled = true
-                val respuesta = response.body()!!
-                if(respuesta.rpta){
-                    //6.1 Guardar Información en SQLite
-                    val personaEntity = PersonaEntity(
-                        respuesta.idpersona.toInt(),
-                        respuesta.nombres,
-                        respuesta.apellidos,
-                        respuesta.email,
-                        respuesta.celular,
-                        respuesta.usuario,
-                        respuesta.password,
-                        respuesta.esvoluntario
-                    )
-                    if(verificarValorSharedPreferences()){
-                        personaViewModel.actualizar(personaEntity)
-                    }else{
-                        personaViewModel.insertar(personaEntity)
-                        if(binding.chkrecordar.isChecked){
-                            SharedPreferencesManager().setSomeBooleanValue(Constantes().PREF_RECORDAR, true)
-                        }
-                    }
-                    startActivity(Intent(applicationContext,
-                        HomeActivity::class.java))
-                    finish()
-                }else{
-                    AppMensaje.enviarMensaje(binding.root,
-                        response.body()!!.mensaje,
-                        TipoMensaje.ERROR)
-                }
-            }
-            override fun onFailure(call: Call<ResponseLogin>, t: Throwable) {
-                binding.btnlogin.isEnabled = true
-                AppMensaje.enviarMensaje(binding.root,
-                    "Login failed!",
-                    TipoMensaje.ERROR)
-            }
-        })
+    fun autenticarUsuario(usuario: String, password: String){
+        authViewModel.autenticarUsuario(usuario, password)
     }
 
+    fun obtenerDatosLogin(responseLogin: ResponseLogin){
+        if(responseLogin.rpta){
+            //6.1 Guardar Información en SQLite
+            val personaEntity = PersonaEntity(
+                responseLogin.idpersona.toInt(), responseLogin.nombres,
+                responseLogin.apellidos, responseLogin.email, responseLogin.celular,
+                responseLogin.usuario, responseLogin.password, responseLogin.esvoluntario
+            )
+            if(verificarValorSharedPreferences()){
+                personaViewModel.actualizar(personaEntity)
+            }else{
+                personaViewModel.insertar(personaEntity)
+                if(binding.chkrecordar.isChecked){
+                    SharedPreferencesManager().setSomeBooleanValue(Constantes().PREF_RECORDAR, true)
+                }
+            }
+            startActivity(Intent(applicationContext, HomeActivity::class.java))
+            finish()
+        }else{
+            AppMensaje.enviarMensaje(binding.root, responseLogin.mensaje, TipoMensaje.ERROR)
+        }
+        binding.btnlogin.isEnabled = true
+    }
 
     //2. Método que valida el ingreso de usuario y password.
-    fun validarUsuarioPassword():Boolean{
-        var respuesta = true
+    fun validarUsuarioPassword(){
+        binding.btnlogin.isEnabled = false
+        var okLogin = true
         if(binding.etusuario.text.toString().trim().isEmpty()){
             binding.etusuario.isFocusableInTouchMode = true
             binding.etusuario.requestFocus()
-            respuesta = false
+            okLogin = false
         } else if(binding.etpassword.text.toString().trim().isEmpty()){
-            binding.etpassword.isFocusable = true
             binding.etpassword.isFocusableInTouchMode = true
             binding.etpassword.requestFocus()
-            respuesta = false
+            okLogin = false
         }
-        return respuesta
+        if(okLogin)
+            autenticarUsuario(binding.etusuario.text.toString(),
+                binding.etpassword.text.toString())
+        else{
+            binding.btnlogin.isEnabled = true
+            AppMensaje.enviarMensaje(binding.root,
+                getString(R.string.msguspassword), TipoMensaje.ERROR)
+        }
     }
-
-
 }
